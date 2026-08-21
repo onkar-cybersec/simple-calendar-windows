@@ -319,7 +319,7 @@ namespace SimpleCalendar
 
         public CalendarForm()
         {
-            Text = "Calendar";
+            Text = "Dayframe Calendar";
             StartPosition = FormStartPosition.CenterScreen;
             MinimumSize = new Size(760, 520);
             Size = new Size(1080, 720);
@@ -410,7 +410,7 @@ namespace SimpleCalendar
             Color foregroundColor = dark ? Color.FromArgb(242, 242, 242) : Color.FromArgb(32, 32, 32);
             Color secondaryColor = dark ? Color.FromArgb(180, 180, 180) : Color.FromArgb(92, 92, 92);
 
-            Text = "About Simple Calendar";
+            Text = "About Dayframe Calendar";
             StartPosition = FormStartPosition.CenterParent;
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
@@ -425,7 +425,7 @@ namespace SimpleCalendar
             Label title = new Label
             {
                 AutoSize = true,
-                Text = "Simple Calendar",
+                Text = "Dayframe Calendar",
                 Location = new Point(28, 25),
                 ForeColor = foregroundColor,
                 Font = new Font(Font.FontFamily, 18F, FontStyle.Bold)
