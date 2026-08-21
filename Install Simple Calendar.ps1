@@ -40,6 +40,6 @@ Start-Process "shell:AppsFolder\$($package.PackageFamilyName)!$appId"
 
 Add-Type -AssemblyName PresentationFramework
 [System.Windows.MessageBox]::Show(
-    "Simple Calendar 1.1.2 is installed. Your pinned live tile is preserved.",
+    "Simple Calendar 1.1.3 is installed. Your pinned live tile is preserved.",
     'Simple Calendar installed', 'OK', 'Information'
 ) | Out-Null

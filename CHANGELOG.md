@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.3 - 2026-08-21
+
+- Added seven rainbow-colored rounded-square outlines across Monday through Sunday.
+- Switched date numbers and weekday headings to Ebrima Bold for stronger contrast.
+- Removed the experimental frosted date-number backgrounds.
+- Added an About option to the hamburger menu.
+- Added “Created by Onkar” and a clickable link to `github.com/onkar-cybersec`.
+
 ## 1.1.2 - 2026-08-21
 
 - Replaced the blue sidebar with a glossy black finish.

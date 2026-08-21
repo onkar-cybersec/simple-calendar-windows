@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Globalization;
@@ -18,7 +19,7 @@ namespace SimpleCalendar
         [STAThread]
         private static void Main(string[] args)
         {
-            bool preview = args.Length > 0 && args[0] == "--preview";
+            bool preview = args.Length > 0 && (args[0] == "--preview" || args[0] == "--about-preview");
             if (args.Length == 2 && args[0] == "--make-icon")
             {
                 using (Icon icon = CalendarIcon.Create(DateTime.Today, Theme.Accent, 64))
@@ -39,7 +40,8 @@ namespace SimpleCalendar
             // Preview builds can skip package-only live-tile scheduling; normal
             // installed launches keep the widget update path exactly as before.
             if (!preview) TileService.UpdateAndSchedule();
-            Application.Run(new CalendarForm());
+            if (args.Length > 0 && args[0] == "--about-preview") Application.Run(new AboutDialog());
+            else Application.Run(new CalendarForm());
         }
     }
 
@@ -399,6 +401,81 @@ namespace SimpleCalendar
         }
     }
 
+    internal sealed class AboutDialog : Form
+    {
+        public AboutDialog()
+        {
+            bool dark = Theme.IsDark;
+            Color backgroundColor = dark ? Color.FromArgb(30, 30, 32) : Color.White;
+            Color foregroundColor = dark ? Color.FromArgb(242, 242, 242) : Color.FromArgb(32, 32, 32);
+            Color secondaryColor = dark ? Color.FromArgb(180, 180, 180) : Color.FromArgb(92, 92, 92);
+
+            Text = "About Simple Calendar";
+            StartPosition = FormStartPosition.CenterParent;
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            MaximizeBox = false;
+            MinimizeBox = false;
+            ShowInTaskbar = false;
+            ClientSize = new Size(390, 218);
+            BackColor = backgroundColor;
+            ForeColor = foregroundColor;
+            Font = (Font)SystemFonts.MessageBoxFont.Clone();
+            AutoScaleMode = AutoScaleMode.Dpi;
+
+            Label title = new Label
+            {
+                AutoSize = true,
+                Text = "Simple Calendar",
+                Location = new Point(28, 25),
+                ForeColor = foregroundColor,
+                Font = new Font(Font.FontFamily, 18F, FontStyle.Bold)
+            };
+            Label author = new Label
+            {
+                AutoSize = true,
+                Text = "Created by Onkar",
+                Location = new Point(30, 77),
+                ForeColor = secondaryColor,
+                Font = new Font(Font.FontFamily, 10.5F, FontStyle.Regular)
+            };
+            LinkLabel profile = new LinkLabel
+            {
+                AutoSize = true,
+                Text = "github.com/onkar-cybersec",
+                Location = new Point(30, 107),
+                LinkColor = Theme.Accent,
+                ActiveLinkColor = Theme.Accent,
+                VisitedLinkColor = Theme.Accent,
+                Font = new Font(Font.FontFamily, 10F, FontStyle.Regular)
+            };
+            profile.LinkClicked += delegate
+            {
+                try
+                {
+                    Process.Start(new ProcessStartInfo("https://github.com/onkar-cybersec")
+                    {
+                        UseShellExecute = true
+                    });
+                }
+                catch { }
+            };
+
+            Button close = new Button
+            {
+                Text = "Close",
+                DialogResult = DialogResult.OK,
+                Size = new Size(82, 32),
+                Location = new Point(ClientSize.Width - 110, ClientSize.Height - 52)
+            };
+            AcceptButton = close;
+            CancelButton = close;
+            Controls.Add(title);
+            Controls.Add(author);
+            Controls.Add(profile);
+            Controls.Add(close);
+        }
+    }
+
     internal sealed class CalendarCanvas : Control
     {
         private DateTime shownMonth;
@@ -407,7 +484,7 @@ namespace SimpleCalendar
         private bool blurEnabled = true;
         private bool menuVisible;
         private Rectangle hamburgerRect, todayRect, previousRect, nextRect;
-        private Rectangle menuRect, menuBlurRect, menuSidebarRect;
+        private Rectangle menuRect, menuBlurRect, menuSidebarRect, menuAboutRect;
         private Rectangle[,] dayRects = new Rectangle[6, 7];
         private Rectangle[,] previousMiniRects = new Rectangle[6, 7];
         private Rectangle[,] nextMiniRects = new Rectangle[6, 7];
@@ -458,7 +535,7 @@ namespace SimpleCalendar
                 ? Color.FromArgb(210, 14, 14, 17)
                 : Color.FromArgb(16, 16, 19);
             text = dark ? Color.FromArgb(245, 245, 245) : Color.FromArgb(32, 32, 32);
-            secondary = dark ? Color.FromArgb(188, 188, 188) : Color.FromArgb(88, 88, 88);
+            secondary = dark ? Color.FromArgb(188, 188, 188) : Color.FromArgb(70, 70, 70);
             grid = blurEnabled
                 ? (dark ? Color.FromArgb(54, 255, 255, 255) : Color.FromArgb(42, 32, 32, 32))
                 : (dark ? Color.FromArgb(61, 61, 61) : Color.FromArgb(225, 225, 225));
@@ -535,7 +612,7 @@ namespace SimpleCalendar
 
             int cellH = Height >= 620 ? 24 : menuVisible ? 17 : 21;
             int miniHeight = 28 + 18 + 6 * cellH;
-            int previousTop = menuVisible ? (Height >= 620 ? 170 : 160) : 76;
+            int previousTop = menuVisible ? (Height >= 620 ? 210 : 200) : 76;
             int nextTop = previousTop + miniHeight + 22;
             DrawMiniMonth(g, side, shownMonth.AddMonths(-1), previousTop, cellH, previousMiniRects);
             using (Pen p = new Pen(Color.FromArgb(72, 255, 255, 255)))
@@ -552,15 +629,15 @@ namespace SimpleCalendar
 
             int miniTop = top + 28;
             int cellW = Math.Max(22, (side - pad * 2) / 7);
-            using (Font f = UiFont(8F, FontStyle.Bold))
+            using (Font f = UiHeavyFont(8F))
             using (SolidBrush b = new SolidBrush(sidebarSecondary))
                 for (int c = 0; c < 7; c++)
                     DrawCentered(g, week[c].Substring(0, 1), f, b,
                         new Rectangle(pad + c * cellW, miniTop, cellW, 18));
 
             DateTime first = FirstGridDate(month);
-            using (Font f = UiFont(8F, FontStyle.Regular))
-            using (Font holidayDayFont = UiFont(8F, FontStyle.Bold))
+            using (Font f = UiHeavyFont(8F))
+            using (Font holidayDayFont = UiHeavyFont(8F))
             {
                 for (int r = 0; r < 6; r++)
                 for (int c = 0; c < 7; c++)
@@ -621,16 +698,16 @@ namespace SimpleCalendar
             int available = Width - x - 18;
             int colW = available / 7;
             int rowH = Math.Max(48, (Height - headerTop - 31) / 6);
-            using (Font f = UiFont(9.25F, FontStyle.Bold))
+            using (Font f = UiHeavyFont(9.75F))
             using (SolidBrush b = new SolidBrush(secondary))
                 for (int c = 0; c < 7; c++)
                     DrawCentered(g, week[c], f, b, new Rectangle(x + c * colW, headerTop, colW, 28));
 
             int gridTop = headerTop + 31;
             DateTime first = FirstGridDate(shownMonth);
-            using (Font numberFont = UiFont(10F, FontStyle.Regular))
-            using (Font todayFont = UiFont(10F, FontStyle.Bold))
-            using (Font holidayDateFont = UiFont(10F, FontStyle.Bold))
+            using (Font numberFont = UiHeavyFont(10F))
+            using (Font todayFont = UiHeavyFont(10F))
+            using (Font holidayDateFont = UiHeavyFont(10F))
             using (Font holidayFont = UiFont(8.5F, FontStyle.Regular))
             {
                 for (int r = 0; r < 6; r++)
@@ -664,14 +741,18 @@ namespace SimpleCalendar
                     bool isSelected = date.Date == selectedDate.Date;
                     Rectangle numberRect = new Rectangle(rect.Left + 7, rect.Top + 7, 30, 30);
                     Color holidayDateColor = isDarkTheme ? Color.FromArgb(255, 102, 110) : Color.FromArgb(138, 0, 0);
+                    Color dayFrame = DayFrameColor(c);
                     if (isSelected)
                     {
-                        Color selectedFill = holidays.Count > 0 ? holidayDateColor : accent;
-                        using (SolidBrush b = new SolidBrush(selectedFill)) g.FillEllipse(b, numberRect);
+                        using (SolidBrush b = new SolidBrush(dayFrame))
+                            g.FillRoundedRectangle(b, numberRect, 7);
                     }
-                    else if (isToday)
+                    else
                     {
-                        using (Pen p = new Pen(accent, 2F)) g.DrawEllipse(p, numberRect);
+                        int outlineAlpha = date.Month == shownMonth.Month ? 186 : 62;
+                        Color outline = Color.FromArgb(outlineAlpha, dayFrame);
+                        using (Pen p = new Pen(outline, isToday ? 2F : 1.25F))
+                            g.DrawRoundedRectangle(p, Rectangle.Inflate(numberRect, -1, -1), 7);
                     }
                     Color dc = date.Month == shownMonth.Month ? text : Color.FromArgb(115, secondary);
                     Color numberColor = isSelected ? accentText : holidays.Count > 0 ? holidayDateColor : dc;
@@ -685,9 +766,10 @@ namespace SimpleCalendar
 
         private void DrawHamburgerMenu(Graphics g)
         {
-            menuRect = new Rectangle(14, 58, 218, 96);
+            menuRect = new Rectangle(14, 58, 218, 137);
             menuBlurRect = new Rectangle(menuRect.Left + 7, menuRect.Top + 8, menuRect.Width - 14, 36);
             menuSidebarRect = new Rectangle(menuRect.Left + 7, menuRect.Top + 49, menuRect.Width - 14, 36);
+            menuAboutRect = new Rectangle(menuRect.Left + 7, menuRect.Top + 90, menuRect.Width - 14, 36);
 
             bool darkSidebarMenu = sidebarVisible && Width >= 760;
             Color surface = darkSidebarMenu ? Color.FromArgb(255, 30, 30, 34)
@@ -709,6 +791,7 @@ namespace SimpleCalendar
                 g.DrawString(state, f, b, menuBlurRect.Right - size.Width - 12, menuBlurRect.Top + 8);
                 g.DrawString(sidebarVisible ? "Hide sidebar" : "Show sidebar", f, b,
                     menuSidebarRect.Left + 12, menuSidebarRect.Top + 8);
+                g.DrawString("About", f, b, menuAboutRect.Left + 12, menuAboutRect.Top + 8);
             }
             using (SolidBrush b = new SolidBrush(blurEnabled ? accent : secondary))
                 g.FillEllipse(b, menuBlurRect.Right - 46, menuBlurRect.Top + 15, 7, 7);
@@ -777,6 +860,13 @@ namespace SimpleCalendar
                     sidebarVisible = !sidebarVisible;
                     menuVisible = false;
                     Invalidate();
+                    return;
+                }
+                if (menuAboutRect.Contains(e.Location))
+                {
+                    menuVisible = false;
+                    Invalidate();
+                    using (AboutDialog about = new AboutDialog()) about.ShowDialog(FindForm());
                     return;
                 }
                 menuVisible = false;
@@ -939,6 +1029,21 @@ namespace SimpleCalendar
             }
         }
 
+        private static Color DayFrameColor(int column)
+        {
+            Color[] rainbow =
+            {
+                Color.FromArgb(216, 67, 75),
+                Color.FromArgb(232, 124, 28),
+                Color.FromArgb(204, 158, 12),
+                Color.FromArgb(42, 151, 79),
+                Color.FromArgb(24, 139, 190),
+                Color.FromArgb(72, 87, 196),
+                Color.FromArgb(139, 73, 184)
+            };
+            return rainbow[Math.Max(0, Math.Min(6, column))];
+        }
+
         private static Color Mix(Color first, Color second, float secondWeight)
         {
             float firstWeight = 1F - secondWeight;
@@ -983,6 +1088,14 @@ namespace SimpleCalendar
         private static Font UiFont(float size, FontStyle style)
         {
             return new Font(SystemFonts.MessageBoxFont.FontFamily, size, style, GraphicsUnit.Point);
+        }
+
+        private static Font UiHeavyFont(float size)
+        {
+            Font adlam = new Font("Ebrima", size, FontStyle.Bold, GraphicsUnit.Point);
+            if (String.Equals(adlam.Name, "Ebrima", StringComparison.OrdinalIgnoreCase)) return adlam;
+            adlam.Dispose();
+            return UiFont(size, FontStyle.Bold);
         }
 
         private static Rectangle CenterSquare(Rectangle rect, int size)
