@@ -1,8 +1,17 @@
 param([switch]$Elevated)
 
 $ErrorActionPreference = 'Stop'
-$certificatePath = Join-Path $PSScriptRoot 'Simple Calendar Certificate.cer'
-$packagePath = Join-Path $PSScriptRoot 'Simple Calendar Live Tile.msix'
+
+function Find-ReleaseFile([string[]]$Names) {
+    foreach ($name in $Names) {
+        $candidate = Join-Path $PSScriptRoot $name
+        if (Test-Path -LiteralPath $candidate) { return $candidate }
+    }
+    throw "Required release file is missing: $($Names -join ' or ')"
+}
+
+$certificatePath = Find-ReleaseFile @('Simple.Calendar.Certificate.cer', 'Simple Calendar Certificate.cer')
+$packagePath = Find-ReleaseFile @('Simple.Calendar.Live.Tile.msix', 'Simple Calendar Live Tile.msix')
 
 if (-not $Elevated) {
     $arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`" -Elevated"

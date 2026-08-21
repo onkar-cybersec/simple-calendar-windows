@@ -24,17 +24,17 @@ Open the repository's **Releases** page and download the files for version 1.1.2
 
 ### Portable version
 
-Download and run `Simple Calendar.exe`. It needs no installation. Windows live tiles require package identity, so the portable build cannot own the Start-menu live tile.
+Download and run `Simple.Calendar.exe`. It needs no installation. Windows live tiles require package identity, so the portable build cannot own the Start-menu live tile.
 
 ### Live-tile version
 
 Keep these three files together:
 
-- `Simple Calendar Live Tile.msix`
-- `Simple Calendar Certificate.cer`
-- `Install Simple Calendar.ps1`
+- `Simple.Calendar.Live.Tile.msix`
+- `Simple.Calendar.Certificate.cer`
+- `Install.Simple.Calendar.ps1`
 
-Right-click `Install Simple Calendar.ps1`, choose **Run with PowerShell**, and approve the Windows prompt. The script verifies that the included public certificate is restricted to code signing, imports it to **Local Machine > Trusted People**, installs the MSIX, and opens Calendar. The private signing key is not included.
+Right-click `Install.Simple.Calendar.ps1`, choose **Run with PowerShell**, and approve the Windows prompt. The script verifies that the included public certificate is restricted to code signing, imports it to **Local Machine > Trusted People**, installs the MSIX, and opens Calendar. The private signing key is not included.
 
 If needed, find Calendar in Start, choose **Pin to Start**, and resize it to **Small**.
 
