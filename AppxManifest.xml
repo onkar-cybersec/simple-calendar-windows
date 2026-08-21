@@ -5,7 +5,7 @@
   xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   IgnorableNamespaces="uap desktop rescap">
-  <Identity Name="SimpleCalendar.LiveTile" Publisher="CN=Simple Calendar" Version="1.1.3.0" ProcessorArchitecture="x64" />
+  <Identity Name="SimpleCalendar.LiveTile" Publisher="CN=Simple Calendar" Version="1.1.5.0" ProcessorArchitecture="x64" />
   <Properties>
     <DisplayName>Calendar</DisplayName>
     <PublisherDisplayName>Simple Calendar</PublisherDisplayName>

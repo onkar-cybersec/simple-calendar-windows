@@ -1,8 +1,22 @@
 # Changelog
 
+## 1.1.5 - 2026-08-21
+
+- Removed the large colored rounded box around holiday and festival cells.
+- Kept compact multicolor holiday-name chips and bold blood-red holiday dates.
+- Preserved the weekday rainbow badges, current-month-only grid, and live tile.
+
+## 1.1.4 - 2026-08-21
+
+- Moved the seven rainbow colors from date numbers to compact Monday-through-Sunday heading badges.
+- Added light pastel gradient fills, restrained borders, and a subtle highlight to the weekday badges.
+- Removed colored squares and outlines from ordinary date numbers.
+- The large month grid now hides dates from the previous and next months.
+- Kept multicolor holiday/festival cell highlighting and the live tile unchanged.
+
 ## 1.1.3 - 2026-08-21
 
-- Added seven rainbow-colored rounded-square outlines across Monday through Sunday.
+- Added seven rainbow-colored date-column outlines.
 - Switched date numbers and weekday headings to Ebrima Bold for stronger contrast.
 - Removed the experimental frosted date-number backgrounds.
 - Added an About option to the hamburger menu.

@@ -9,7 +9,8 @@ A lightweight, offline Windows 10 calendar with a real glass background, a compa
 - Frosted white glass that reveals and blurs the apps behind the calendar.
 - Glossy black sidebar with the previous and next month at a glance.
 - Ebrima Bold date numbers and weekday headings for clear reading over glass.
-- Seven rainbow colors outline the seven weekday columns with clean rounded squares.
+- Seven light rainbow colors fill the Monday-through-Sunday heading tiles; date numbers remain clean and unboxed.
+- The large month view shows only dates belonging to the selected month.
 - Bold blood-red holiday and festival dates.
 - Different accent colors for holiday and festival cards, including multi-event days.
 - India national holidays, selected 2026 Hindu/regional festivals, and U.S. federal holidays (including observed weekdays).
@@ -25,7 +26,7 @@ A lightweight, offline Windows 10 calendar with a real glass background, a compa
 
 ## Download and run
 
-Open the repository's **Releases** page and download the files for version 1.1.3.
+Open the repository's **Releases** page and download the files for version 1.1.5.
 
 ### Portable version
 

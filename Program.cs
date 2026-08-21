@@ -697,13 +697,35 @@ namespace SimpleCalendar
             int headerTop = 119;
             int available = Width - x - 18;
             int colW = available / 7;
-            int rowH = Math.Max(48, (Height - headerTop - 31) / 6);
+            int rowH = Math.Max(48, (Height - headerTop - 37) / 6);
             using (Font f = UiHeavyFont(9.75F))
-            using (SolidBrush b = new SolidBrush(secondary))
                 for (int c = 0; c < 7; c++)
-                    DrawCentered(g, week[c], f, b, new Rectangle(x + c * colW, headerTop, colW, 28));
+                {
+                    int headingWidth = c == 6 ? available - c * colW : colW;
+                    int tileWidth = Math.Min(88, Math.Max(50, headingWidth - 12));
+                    Rectangle headingRect = new Rectangle(
+                        x + c * colW + (headingWidth - tileWidth) / 2, headerTop, tileWidth, 32);
+                    Color weekdayColor = WeekdayColor(c);
+                    Color weekdayTop = Mix(weekdayColor, Color.White, .86F);
+                    Color weekdayBottom = Mix(weekdayColor, Color.White, .67F);
+                    Color weekdayBorder = Mix(weekdayColor, Color.White, .22F);
+                    Rectangle shadowRect = headingRect;
+                    shadowRect.Offset(0, 2);
+                    using (SolidBrush b = new SolidBrush(Color.FromArgb(24, 0, 0, 0)))
+                        g.FillRoundedRectangle(b, shadowRect, 8);
+                    using (LinearGradientBrush b = new LinearGradientBrush(
+                        headingRect, weekdayTop, weekdayBottom, LinearGradientMode.Vertical))
+                        g.FillRoundedRectangle(b, headingRect, 7);
+                    using (Pen p = new Pen(weekdayBorder, 1.15F))
+                        g.DrawRoundedRectangle(p, headingRect, 7);
+                    using (Pen p = new Pen(Color.FromArgb(145, 255, 255, 255), 1F))
+                        g.DrawLine(p, headingRect.Left + 8, headingRect.Top + 3,
+                            headingRect.Right - 8, headingRect.Top + 3);
+                    using (SolidBrush b = new SolidBrush(Color.FromArgb(35, 35, 38)))
+                        DrawCentered(g, week[c], f, b, headingRect);
+                }
 
-            int gridTop = headerTop + 31;
+            int gridTop = headerTop + 37;
             DateTime first = FirstGridDate(shownMonth);
             using (Font numberFont = UiHeavyFont(10F))
             using (Font todayFont = UiHeavyFont(10F))
@@ -715,19 +737,20 @@ namespace SimpleCalendar
                 {
                     DateTime date = first.AddDays(r * 7 + c);
                     Rectangle rect = new Rectangle(x + c * colW, gridTop + r * rowH, c == 6 ? available - c * colW : colW, rowH);
-                    dayRects[r, c] = rect;
-                    IList<HolidayInfo> holidays = HolidayCalendar.Get(date);
+                    bool isCurrentMonth = date.Year == shownMonth.Year && date.Month == shownMonth.Month;
+                    dayRects[r, c] = isCurrentMonth ? rect : Rectangle.Empty;
                     if (c >= 5)
                         using (SolidBrush b = new SolidBrush(weekendSurface)) g.FillRectangle(b, rect);
-                    if (holidays.Count > 0)
+                    if (!isCurrentMonth)
                     {
-                        Color holidayColor = HolidayColor(holidays[0]);
-                        Rectangle holidayBox = Rectangle.Inflate(rect, -3, -3);
-                        using (SolidBrush b = new SolidBrush(Color.FromArgb(isDarkTheme ? 40 : 34, holidayColor)))
-                            g.FillRoundedRectangle(b, holidayBox, 8);
-                        using (Pen p = new Pen(Color.FromArgb(isDarkTheme ? 116 : 98, holidayColor), 1.2F))
-                            g.DrawRoundedRectangle(p, holidayBox, 8);
+                        using (Pen p = new Pen(grid))
+                        {
+                            g.DrawLine(p, rect.Left, rect.Top, rect.Right, rect.Top);
+                            g.DrawLine(p, rect.Left, rect.Top, rect.Left, rect.Bottom);
+                        }
+                        continue;
                     }
+                    IList<HolidayInfo> holidays = HolidayCalendar.Get(date);
                     if (r == hoverRow && c == hoverCol)
                         using (SolidBrush b = new SolidBrush(hover))
                             g.FillRoundedRectangle(b, Rectangle.Inflate(rect, -3, -3), 7);
@@ -741,21 +764,9 @@ namespace SimpleCalendar
                     bool isSelected = date.Date == selectedDate.Date;
                     Rectangle numberRect = new Rectangle(rect.Left + 7, rect.Top + 7, 30, 30);
                     Color holidayDateColor = isDarkTheme ? Color.FromArgb(255, 102, 110) : Color.FromArgb(138, 0, 0);
-                    Color dayFrame = DayFrameColor(c);
-                    if (isSelected)
-                    {
-                        using (SolidBrush b = new SolidBrush(dayFrame))
-                            g.FillRoundedRectangle(b, numberRect, 7);
-                    }
-                    else
-                    {
-                        int outlineAlpha = date.Month == shownMonth.Month ? 186 : 62;
-                        Color outline = Color.FromArgb(outlineAlpha, dayFrame);
-                        using (Pen p = new Pen(outline, isToday ? 2F : 1.25F))
-                            g.DrawRoundedRectangle(p, Rectangle.Inflate(numberRect, -1, -1), 7);
-                    }
-                    Color dc = date.Month == shownMonth.Month ? text : Color.FromArgb(115, secondary);
-                    Color numberColor = isSelected ? accentText : holidays.Count > 0 ? holidayDateColor : dc;
+                    Color dc = text;
+                    Color numberColor = holidays.Count > 0 ? holidayDateColor
+                        : isSelected || isToday ? accent : dc;
                     Font dateFont = holidays.Count > 0 ? holidayDateFont : isToday ? todayFont : numberFont;
                     using (SolidBrush b = new SolidBrush(numberColor))
                         DrawCentered(g, date.Day.ToString(), dateFont, b, numberRect);
@@ -1029,7 +1040,7 @@ namespace SimpleCalendar
             }
         }
 
-        private static Color DayFrameColor(int column)
+        private static Color WeekdayColor(int column)
         {
             Color[] rainbow =
             {
