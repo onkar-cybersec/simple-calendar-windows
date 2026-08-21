@@ -1,0 +1,11 @@
+.vs/
+bin/
+obj/
+dist/
+*.pfx
+*.p12
+*.snk
+*.user
+*.suo
+*.tmp
+*.log
